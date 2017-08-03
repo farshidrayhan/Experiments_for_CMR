@@ -1,3 +1,5 @@
+from random import random
+
 import sklearn.datasets
 import sklearn.tree
 import collections
@@ -8,7 +10,7 @@ from sklearn.model_selection import train_test_split
 clf = sklearn.tree.DecisionTreeClassifier(random_state=42)
 iris = sklearn.datasets.load_iris()
 
-total_matrix = pandas.DataFrame(pandas.read_csv('sea.txt'))
+total_matrix = pandas.DataFrame(pandas.read_csv('pageblocks.txt'))
 
 x_train = []
 x_test = []
@@ -25,21 +27,23 @@ for l in total_matrix:
     X.append(l[0:last_index])
     y.append(l[last_index])
     count += 1
-    if count == 1000 :
-        break
+    # if count == 1000 :
+    #     break
 X = iris.data
 y = iris.target
 
 count = 0
 for i in y :
-    if i == 0 or i == 2:
+    if i == 1 or i == 2 or i == 2 :
+        if random() >= .6:
+            continue
         x_train.append(X[count])
         y_train.append(y[count])
     count += 1
 
 count = 0
 for i in y :
-    if i == 1:
+    if i == 2 or i == 0 or i == 0:
         x_test.append(X[count])
         y_test.append(y[count])
     count += 1
@@ -48,7 +52,7 @@ for i in y :
 
 number_of_features = len(x_train[0])
 
-print("### train phase ###",end='\n\n')
+print("### training phase ###",end='\n\n')
 
 tree = clf.fit(x_train, y_train)
 #
@@ -71,13 +75,13 @@ for d, dec in enumerate(dec_paths):
 tree_leafs_unique = list(set(clf.apply(x_train)))   # leafs contains the leaf nodes of the tree
 tree_leafs = clf.apply(x_train)   # leafs contains the leaf nodes of the tree
 # print(list(tree_leafs))
-print('nodes who are leaf ',list( tree_leafs_unique))
+print('nodes who are leaf in training' ,list( tree_leafs_unique))
 
 
 centroid_lst = []
 
 leaf_centroids = {}
-print("calculating Centroids ")
+# print("calculating Centroids ")
 for i in tree_leafs_unique:
     # for j in tree_leafs:
     #     centroid_lst[i].append(x_train[i])
@@ -111,15 +115,19 @@ for i in tree_leafs_unique:
     # print(temp_centroid)
     # break
 #
-for i in leaf_centroids:
-    print(i , " " , leaf_centroids[i])
+# for i in leaf_centroids:
+#     print(i , " " , leaf_centroids[i])
 
 print()
-print("### Test Phase ###",end='\n\n')
+print("### Testing Phase ###",end='\n\n')
 
 leaf_centroids_test = {}
 tree_leafs_unique = list(set(clf.apply(x_test)))   # leafs contains the leaf nodes of the tree
 tree_leafs = clf.apply(x_test)   # leafs contains the leaf nodes of the tree
+
+print('nodes who are leaf in testing ' ,list( tree_leafs_unique))
+print()
+
 # print(tree_leafs)
 
 # for i in tree_leafs:
@@ -135,7 +143,7 @@ for i in tree_leafs_unique:
     tmp_lst = []
     for k, j in enumerate(tree_leafs):
         if j == i:
-            tmp_lst.append(x_train[k])
+            tmp_lst.append(x_test[k])
 
     # numpy.asarray(tmp_lst)
     # print(tmp_lst)
@@ -159,7 +167,12 @@ for i in tree_leafs_unique:
     leaf_centroids_test[i] = temp_centroid
     # print(temp_centroid)
     # break
-#
+print("### Comparision ###")
 for i in leaf_centroids_test:
-    print(i , " " , leaf_centroids_test[i])
+
+    # print("Training centroid for node ", i , " " , leaf_centroids[i])
+    # print("Testing centroid for node ",i , " " , leaf_centroids_test[i])
+    distance =  abs( leaf_centroids[i] * leaf_centroids[i] - leaf_centroids_test[i] * leaf_centroids_test[i] )
+    print("Difference between two centroids for node ", i," : ", numpy.sqrt(distance) )
+    print()
 
